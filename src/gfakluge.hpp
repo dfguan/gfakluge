@@ -75,7 +75,7 @@ namespace gfak{
         vector<string> overlaps;
         map<string, opt_elem> opt_fields;
         std::string to_string(){
-            
+            return "";    
         }
     };
 
@@ -309,8 +309,14 @@ namespace gfak{
             return st.str();
         }
     };
-
-
+        
+    //dg30 code here
+    struct id_component {
+        std::string prefix;
+        uint64_t    cur_max_ind;
+        std::string suffix;
+    };
+    //end 
     class GFAKluge{
 			friend std::ostream& operator<<(std::ostream& os, GFAKluge& g);
 
@@ -425,9 +431,21 @@ namespace gfak{
             // double simple_connectivity() // reports avg edges / sequence
             // double weighted_connectivity() // weight areas of high connectivity higher
             //      behaves kind of like [(N_edges)^2 / (N_seqs)^2 if N_edges > 2]
-            
-            
+            /****************************************************/
+            /*              dg's code here                      */
+            /****************************************************/
+ 
+            bool edge_exist(string e1_id, string e2_id); 
+            int  id_analyze();
+            //end
+            string get_new_id(int type);//1 for seq 2 for edge 3 for group 
+
         private:
+            //dg30 code here
+            //here consider id composed by a prefix and number and suffix not work for the others
+            id_component edge_id_comp, group_id_comp;
+            //end
+            
             bool use_walks = false;
             // Store whether we've already gone walks->paths and paths->walks
             bool normalized_paths = false;
@@ -442,7 +460,12 @@ namespace gfak{
             uint64_t base_gap_id = 0;
             uint64_t base_frag_id = 0;
             uint64_t base_group_id = 0;
-            
+           
+
+            //dg30 code here
+            std::string current_max_seq_id = "";
+            std::string current_max_edge_id = "";
+            std::string current_max_group_id = "";
 
             double version = 0.0;
             map<std::string, header_elem> header;
