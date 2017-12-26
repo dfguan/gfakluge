@@ -249,7 +249,9 @@ namespace gfak{
                 int tag_index = 3;
                 sequence_elem s;
                 s.name = tokens[1];
-
+                //dg30 code here
+                if (tokens[1] > current_max_seq_id) current_max_seq_id = tokens[1] ;
+                //end
                 if (this->version >= 2.0 || string_is_number(tokens[2])){
                    s.length = stoi(tokens[2]); 
                    s.sequence = tokens[3];
@@ -288,7 +290,10 @@ namespace gfak{
                 edge_elem e;
 
                 e.id = tokens[1];
-                
+                 
+                //dg30 code here
+                if (e.id > current_max_edge_id) current_max_edge_id = e.id;
+                //end
                 string x = tokens[2];
                 e.source_name = x.substr(0, x.length() - 1);
                 e.source_orientation_forward = (x.back() == '+');
@@ -376,6 +381,9 @@ namespace gfak{
                 if (g.id == "*"){
                     g.id = std::to_string(++base_group_id);
                 }
+                //dg30 code here
+                if (g.id > current_max_group_id) current_max_group_id = g.id;
+                //end
                 vector<string> g_ids = split(tokens[2], ' ');
                 for (int i = 0 ; i < g_ids.size(); i++){
                         g.items.push_back(g_ids[i].substr(0, g_ids[i].length() - 1));
@@ -402,6 +410,10 @@ namespace gfak{
                 if (g.id == "*"){
                     g.id = std::to_string(++base_group_id);
                 }
+                //dg30 code here
+                if (g.id > current_max_group_id) current_max_group_id = g.id;
+                //end
+                
                 g.items = split(tokens[2], ' ');
                 if (tokens.size() > 8){
                     for (int i = 9; i < tokens.size(); i++){
@@ -1295,4 +1307,61 @@ namespace gfak{
         os << g.to_string();
         return os;
     }
+    //dg30 code start here
+    bool GFAKluge::edge_exist(string e1_id, string e2_id) 
+    {
+        //e1 e2 could be all sources
+        for (auto e : seq_to_edges[e1_id]) 
+            if (e.sink_name == e2_id)
+                return true;    
+         
+        for (auto e : seq_to_edges[e2_id]) 
+            if (e.sink_name == e1_id)
+                return true;    
+        return false;
+    }    
+    
+    int GFAKluge::id_analyze() 
+    {
+        //decompose edge id
+        int len = current_max_edge_id.length();
+        int b1, b2;
+        id_component& t = edge_id_comp;
+        string z = current_max_edge_id;
+        for ( int i = 0; i < 2; ++i) {
+            if (len) {
+                for (b1 = 0; b1 < len; ++b1) if (isdigit(z[b1])) break;
+                for (b2 = b1 + 1; b2 < len; ++b2) if (!isdigit(z[b2])) break; 
+                t.prefix = z.substr(0,b1);
+                t.cur_max_ind = stoi(z.substr(b1,b2 - b1));
+                t.suffix = z.substr(b2);
+                
+            } else {
+                t.prefix = "";
+                t.cur_max_ind = 0; 
+                t.suffix = ""; 
+            } 
+            
+            t = group_id_comp;     
+            z = current_max_group_id;
+        }
+        return 0; 
+    }
+    string GFAKluge::get_new_id(int type)
+    {
+        if (type == 2) {
+            return edge_id_comp.prefix + std::to_string(++edge_id_comp.cur_max_ind) + edge_id_comp.suffix;
+        } else {
+            if (type == 3) {
+                return group_id_comp.prefix+ std::to_string(++group_id_comp.cur_max_ind) + group_id_comp.suffix;
+            } else 
+                return "";
+        } 
+    
+    }
+
+
+
+
+    //dg30 code end here
 }
