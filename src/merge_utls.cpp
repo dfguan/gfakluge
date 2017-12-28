@@ -46,32 +46,24 @@ int proc_noneoverlap_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
        edg.ends.set(0,0);
        edg.ends.set(1,0);
        if (u->isConverted) {
-            if (!edg.source_begin) {
-                edg.ends.set(0,1);
-                edg.ends.set(1,1);
-                //source_add_one = 0;
-            }
-            edg.source_begin = u->seq_len - edg.source_begin; //- source_add_one;
-            edg.source_end = u->seq_len - edg.source_end; // - source_add_one;
-       } else {
-            if (edg.source_end  == (uint64_t) u->seq_len) {edg.ends.set(0,1);edg.ends.set(1,1);} //source_add_one = 0;} 
-       }
+            int64_t t = edg.source_begin;
+            edg.source_begin = u->seq_len - edg.source_end; //- source_add_one;
+            edg.source_end = u->seq_len - t; // - source_add_one;
+       } 
+		if (edg.source_end  == (uint64_t) u->seq_len) {edg.ends.set(0,1);edg.ends.set(1,1);} //source_add_one = 0;} 
        //int sink_add_one = 1;
        edg.ends.set(2,0);
        edg.ends.set(3,0);
        if (v->isConverted) {
-            if (!edg.sink_begin) {
-                edg.ends.set(2,1);
-                edg.ends.set(3,1);
-            }
-            edg.sink_begin = v->seq_len - edg.sink_begin;// -sink_add_one;
-            edg.sink_end = v->seq_len - edg.sink_end;// - sink_add_one;
-       } else {
-            if (edg.sink_end == (uint64_t) v->seq_len) {
-                edg.ends.set(2,1);
-                edg.ends.set(3,1);
-            }
-       }
+            int64_t t = edg.sink_begin;
+            edg.sink_begin = v->seq_len - edg.sink_end;// -sink_add_one;
+            edg.sink_end = v->seq_len - t;// - sink_add_one;
+       }  
+		if (edg.sink_end == (uint64_t) v->seq_len) {
+			edg.ends.set(2,1);
+			edg.ends.set(3,1);
+		}
+       
         int dist =  edg.source_end - edg.source_begin + edg.sink_end - edg.sink_begin;
         edg.alignment = to_string(dist) + "M";
 
@@ -117,7 +109,7 @@ int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
     //if not contained 
     if (u->ref_e < v->ref_e)  {
         e_d = v->ref_e - u->ref_e;
-        edg.source_begin = u->seq_e - s_d;//check if wrong  
+        edg.source_begin = u->seq_e - s_d - 1;//check if wrong to minus one here?  
         edg.source_end = u->seq_e;
          
         edg.sink_begin = v->seq_s; 
@@ -126,31 +118,23 @@ int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
         edg.ends.set(0,0);
         edg.ends.set(1,0);
         if (u->isConverted) {
-            if (!edg.source_begin) {
-                edg.ends.set(1,1);
-            }
             int64_t t = edg.source_begin;
             edg.source_begin = u->seq_len - edg.source_end;// + source_add_one;
             edg.source_end = u->seq_len - t; //+ source_add_one;
-        } else { 
-            if (edg.source_end == (uint64_t) u->seq_len) {
-                edg.ends.set(1,1); 
-            } 
         }
+
+        if (edg.source_end == (uint64_t) u->seq_len) {
+                edg.ends.set(1,1); 
+        } 
         //int sink_add_one = 1;
         edg.ends.set(2,0);
         edg.ends.set(3,0);
         if (v->isConverted) {
-            if (!edg.sink_begin) {
-                edg.ends.set(3,1);
-                //sink_add_one = 0;
-            }
             int64_t t = edg.sink_begin;
             edg.sink_begin = v->seq_len - edg.sink_end;// + sink_add_one;
             edg.sink_end = v->seq_len - t;// + sink_add_one;
-        } else {
-            if (edg.sink_end == (uint64_t) v->seq_len) edg.ends.set(3,1);
         }
+		if (edg.sink_end == (uint64_t) v->seq_len) edg.ends.set(3,1);
          
         edg.alignment = to_string(u->ref_e - v->ref_e + 1) + "M";  
         g.add_edge(edg.source_name, edg);
@@ -166,28 +150,24 @@ int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
         edg.ends.set(0,0);
         edg.ends.set(1,0);
         if (u->isConverted) {
-            if (!edg.source_begin) edg.ends.set(1,1);
                 //source_add_one = 0;
             int64_t t = edg.source_begin;
             edg.source_begin = u->seq_len - edg.source_end; //+ source_add_one;
             edg.source_end = u->seq_len - t;// + source_add_one;
-        } else {
-            if (edg.source_end == (uint64_t) u->seq_len) edg.ends.set(1,1);
-        } 
+        }
+        if (edg.source_end == (uint64_t) u->seq_len) edg.ends.set(1,1);
 
         //int sink_add_one = 1;
         edg.ends.set(2,0);
         edg.ends.set(3,0);
         if (v->isConverted) {
-            if (edg.sink_begin)  edg.ends.set(3,1);
-            
             int64_t t = edg.sink_begin;
             edg.sink_begin = v->seq_len - edg.sink_end;
             edg.sink_end = v->seq_len - t;
-        } else {
-            if (edg.sink_end == (uint64_t) v->seq_len) edg.ends.set(3, 1);
         } 
-        edg.alignment = to_string(v->ref_e - v->ref_s) + "M";//!!!whether should add one here according to coordinate  
+		if (edg.sink_end == (uint64_t) v->seq_len) edg.ends.set(3, 1);
+        
+		edg.alignment = to_string(v->ref_e - v->ref_s) + "M";//!!!whether should add one here according to coordinate  
         g.add_edge(edg.source_name, edg);
     }
     return NORMAL;
@@ -214,7 +194,7 @@ int proc_blk(aln_block *abk, int u_size, GFAKluge &g, int bk_thres)
             o.key = "BK";
             o.type = "B";
             o.val = "i";
-            o.val += to_string(au[i].seq_e) + ":" + to_string(au[i].seq_e +1);
+            o.val += to_string(au[i].seq_e - 1) + ":" + to_string(au[i].seq_e);
             sequence_elem& s = ss[au[i].seq_id];//not temporary?
             s.opt_fields.push_back(o);
         }
