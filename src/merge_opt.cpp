@@ -64,9 +64,8 @@ bool get_params(int argc ,char *argv[], opts *o)
         help(); 
         return false;
     } else {
-        ++optind;
-        o->gfa_fn = argv[optind++];
-        o->map_fn = argv[optind];
+		o->gfa_fn = argv[optind++];
+		o->map_fn = argv[optind];
     }
     return true;
 }

@@ -186,17 +186,17 @@ int proc_blk(aln_block *abk, int u_size, GFAKluge &g, int bk_thres, int* bk_coun
             o.type = "B";
             o.val = "i";
             o.val += to_string(au[i].seq_s) + ":" + to_string(au[i].seq_s -1);
-            sequence_elem& s = ss[au[i].seq_id];//not temporary?
+            sequence_elem& s = ss[au[i].seq_id];//if key exist?
             s.opt_fields.push_back(o);
 			++*bk_count;
         }
-        if ((dist = au[i].seq_len - au[i].seq_e) > bk_thres) {
+        if ((dist = au[i].seq_len - au[i].seq_e + 1) > bk_thres) {
             opt_elem o;
             o.key = "BK";
             o.type = "B";
             o.val = "i";
             o.val += to_string(au[i].seq_e - 1) + ":" + to_string(au[i].seq_e);
-            sequence_elem& s = ss[au[i].seq_id];//not temporary?
+            sequence_elem& s = ss[au[i].seq_id];//if key exist
             s.opt_fields.push_back(o);
 			++*bk_count;
         }

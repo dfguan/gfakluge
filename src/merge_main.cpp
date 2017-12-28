@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
         exit(0);
     GFAKluge gg;
     gg.parse_gfa_file(o.gfa_fn);
-    
+	
     paf_parser pp;
     pp.open_file(o.map_fn);
 	
