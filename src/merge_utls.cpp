@@ -173,7 +173,7 @@ int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
     return NORMAL;
 }
 
-int proc_blk(aln_block *abk, int u_size, GFAKluge &g, int bk_thres)
+int proc_blk(aln_block *abk, int u_size, GFAKluge &g, int bk_thres, int* bk_count, int* jn_count)
 {
     int dist;
     aln_unit *au = abk->alns;
@@ -188,6 +188,7 @@ int proc_blk(aln_block *abk, int u_size, GFAKluge &g, int bk_thres)
             o.val += to_string(au[i].seq_s) + ":" + to_string(au[i].seq_s -1);
             sequence_elem& s = ss[au[i].seq_id];//not temporary?
             s.opt_fields.push_back(o);
+			++*bk_count;
         }
         if ((dist = au[i].seq_len - au[i].seq_e) > bk_thres) {
             opt_elem o;
@@ -197,6 +198,7 @@ int proc_blk(aln_block *abk, int u_size, GFAKluge &g, int bk_thres)
             o.val += to_string(au[i].seq_e - 1) + ":" + to_string(au[i].seq_e);
             sequence_elem& s = ss[au[i].seq_id];//not temporary?
             s.opt_fields.push_back(o);
+			++*bk_count;
         }
     } 
     for (int i = 0; i < u_size; ++i) {
@@ -216,6 +218,7 @@ int proc_blk(aln_block *abk, int u_size, GFAKluge &g, int bk_thres)
                 } else {
                     proc_overlapped_edges(au + u, au + v, g); 
                 }
+				++*jn_count;
             }
         }
     }

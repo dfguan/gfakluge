@@ -37,17 +37,23 @@ int main(int argc, char *argv[])
     
     paf_parser pp;
     pp.open_file(o.map_fn);
-    
+	
+	int bk_count, jn_count;
+	bk_count = jn_count = 0;	
     int unit_size;
     while ((unit_size = pp.read_next_block())) { 
         aln_block * a = pp.get_blk();
-        proc_blk(a, unit_size, gg, o.bk_thres);     
+        proc_blk(a, unit_size, gg, o.bk_thres, &bk_count, &jn_count);     
     }
 
     pp.close_file();
-    //write new gg out to stdout
-     
-    return NORMAL;
+    //print statistics
+	fprintf(stderr, "[merge stats]: %d break point, %d joint point\n", bk_count, jn_count);
+	
+	//write new gg out to stdout
+	gg.block_order_string_2(); 
+    
+	return NORMAL;
 }
 
 

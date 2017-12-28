@@ -24,10 +24,8 @@
 using namespace std;
 using namespace gfak;
 
-int proc_blk(aln_block *abk, int u_s, GFAKluge &g, int bk_thres);
 
-int proc_noneoverlap_edges(aln_unit *u, aln_unit *v, GFAKluge &g);
-int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g);
+int proc_blk(aln_block *abk, int u_s, GFAKluge &g, int bk_thres, int *bk_count, int *jn_count);
 
 #endif
 
