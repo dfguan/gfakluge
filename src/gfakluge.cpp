@@ -1334,12 +1334,14 @@ namespace gfak{
                 for (b2 = b1 + 1; b2 < len; ++b2) if (!isdigit(z[b2])) break; 
                 t.prefix = z.substr(0,b1);
                 t.cur_max_ind = stoi(z.substr(b1,b2 - b1));
+				t.fixed_len = b2 - b1;
                 t.suffix = z.substr(b2);
                 
             } else {
                 t.prefix = "";
                 t.cur_max_ind = 0; 
                 t.suffix = ""; 
+				t.fixed_len = 6;//defaut to six
             } 
             
             t = group_id_comp;     
@@ -1350,16 +1352,19 @@ namespace gfak{
     string GFAKluge::get_new_id(int type)
     {
         if (type == 2) {
-            return edge_id_comp.prefix + std::to_string(++edge_id_comp.cur_max_ind) + edge_id_comp.suffix;
+			int fixed_len = edge_id_comp.fixed_len;
+            char z[fixed_len+1]; snprintf(z, fixed_len+1, "%0*llu", fixed_len, ++edge_id_comp.cur_max_ind);
+			return edge_id_comp.prefix + z + edge_id_comp.suffix;
         } else {
             if (type == 3) {
-                return group_id_comp.prefix+ std::to_string(++group_id_comp.cur_max_ind) + group_id_comp.suffix;
+				int fixed_len = group_id_comp.fixed_len;
+				char z[fixed_len+1]; snprintf(z, fixed_len+1, "%0*llu", fixed_len, ++group_id_comp.cur_max_ind);
+                return group_id_comp.prefix+ z + group_id_comp.suffix;
             } else 
                 return "";
         } 
     
     }
-
 
 
 

@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  error.hpp
+ *       Filename:  convert_gfa.hpp
  *
- *    Description:  type of errors
+ *    Description:  head file of convert_gfa.cpp 
  *
  *        Version:  1.0
- *        Created:  21/12/2017 14:34:26
+ *        Created:  30/12/2017 11:05:20
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -15,17 +15,18 @@
  *
  * =====================================================================================
  */
-#ifndef _ERR_H
-#define _ERR_H
+#ifndef _CONVERT_GFA_H
+#define _CONVERT_GFA_H
 
-//NORMAL STATUS
-#define NORMAL 0
-//ERRORs require to exit
-#define RES_ERR 1 //resource error memory or cpu
-#define IO_ERR 2 //file not found or some other ERR
-#define FL_FORMAT_ERR 3
-//WARNINGs 
-#define EMPTY_FILE 4
-#define OTHER 3
 
+
+#include "gfakluge.hpp"
+#include "status_code.hpp"
+
+
+using namespace std;
+using namespace gfak;
+
+
+int	convert_gfa(GFAKluge& gg);
 #endif
