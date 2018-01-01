@@ -134,8 +134,9 @@ public:
        if (fl.is_open()) {
            //read the first line
             getline(fl, cur_ln);
-            tokens = split(cur_ln, '\t');
             fl.seekg(0, ios::beg);
+            tokens = split(cur_ln, '\t');
+			pre_id = tokens[5];
             return NORMAL;
        } else 
            return IO_ERR;
@@ -158,9 +159,10 @@ public:
     
     int process(string& l)
     {
-        if (l != "") {
+		//fprintf(stderr, "%s\n",l.c_str());
+		if (l != "") {
             tokens = split(l, '\t');
-            if (tokens[6] == pre_id) {
+            if (tokens[5] == pre_id) {
                 aln_unit u;
                 u.seq_id = tokens[0];
                 u.seq_len = stoi(tokens[1]);
@@ -180,7 +182,7 @@ public:
                 aln_blk.push(&u);
                 return CONTINUE;
             } else {
-                pre_id = tokens[6];
+                pre_id = tokens[5];
                 return BREAK; 
             }
         } else 

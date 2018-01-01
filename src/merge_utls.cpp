@@ -99,7 +99,7 @@ int proc_noneoverlap_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
 int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
 {
     edge_elem edg;
-    edg.id = "*";//new id here got to figure out how to do 
+    edg.id = g.get_new_id(2);//new id here got to figure out how to do 
     int s_d = v->ref_s - u->ref_s; // distance of start
     int e_d; //distance of ends 
     edg.source_name = u->seq_id;

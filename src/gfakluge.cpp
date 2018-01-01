@@ -284,6 +284,7 @@ namespace gfak{
                         }
                     }
                 }
+				//fprintf(stderr, "%s\t%llu\n", s.name.c_str(), s.length);
                 name_to_seq[s.name] = s;
             }
             else if (tokens[0] == "E"){
@@ -1326,26 +1327,27 @@ namespace gfak{
         //decompose edge id
         int len = current_max_edge_id.length();
         int b1, b2;
-        id_component& t = edge_id_comp;
+        id_component* t = &edge_id_comp;
         string z = current_max_edge_id;
         for ( int i = 0; i < 2; ++i) {
             if (len) {
                 for (b1 = 0; b1 < len; ++b1) if (isdigit(z[b1])) break;
                 for (b2 = b1 + 1; b2 < len; ++b2) if (!isdigit(z[b2])) break; 
-                t.prefix = z.substr(0,b1);
-                t.cur_max_ind = stoi(z.substr(b1,b2 - b1));
-				t.fixed_len = b2 - b1;
-                t.suffix = z.substr(b2);
+                t->prefix = z.substr(0,b1);
+                t->cur_max_ind = stoi(z.substr(b1,b2 - b1));
+				t->fixed_len = b2 - b1;
+                t->suffix = z.substr(b2);
                 
             } else {
-                t.prefix = "";
-                t.cur_max_ind = 0; 
-                t.suffix = ""; 
-				t.fixed_len = 6;//defaut to six
+                t->prefix = "";
+                t->cur_max_ind = 0; 
+                t->suffix = ""; 
+				t->fixed_len = 6;//defaut to six
             } 
             
-            t = group_id_comp;     
+            t = &group_id_comp;     
             z = current_max_group_id;
+			len = z.length();
         }
         return 0; 
     }

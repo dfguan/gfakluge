@@ -88,31 +88,31 @@ int convert_gfa(GFAKluge& gg)
 	//output partof_contigs
 	
 	map<string, path_elem> pp = gg.get_name_to_path();		
-	map<string, path_elem>::iterator it;		
 	map<string, vector<edge_elem>> n_2_e = gg.get_seq_to_edges();
 	map<string, sequence_elem, custom_key> n_2_s = gg.get_name_to_seq();
-
 	vector<sequence_elem> ss;
-	for (it = pp.begin(); it != pp.end(); ++it) {
-		if (is_p_ctg(it->first)) {
+	
+	for (auto it : pp) {
+		if (is_p_ctg(it.first)) {
 			sequence_elem s;
-			s.name = it->first;
-			path_elem &p = it->second;
+			s.name = it.first;
+			path_elem &p = it.second;
 			//init first path element
-			string pre_seq_id = it->first;
+			string pre_seq_id = p.segment_names[0];
 			string cur_seq_id;
 			int cor_s, cor_e;
 			bool isRc, isExist;
-			s.length = n_2_s[s.name].length;
+			s.length = n_2_s[pre_seq_id].length;
 			if (s.length != UINT64_MAX) {
-				s.sequence = n_2_s[s.name].sequence; 
+				s.sequence = p.orientations[0] ? n_2_s[pre_seq_id].sequence : rc_dna_seq(n_2_s[pre_seq_id].sequence, 0, n_2_s[pre_seq_id].length) ; 
 			} else 
 				return FL_FORMAT_ERR;	
 			for (size_t i = 1 ; i < p.segment_names.size(); ++i) {
 				isExist = false;
 				for (auto a : n_2_e[pre_seq_id]) {
 					if (a.sink_name == p.segment_names[i]) {
-						cor_s = stoi(a.tags["ob"].val);							   cor_e = stoi(a.tags["oe"].val);
+						cor_s = stoi(a.tags["ob"].val);
+						cor_e = stoi(a.tags["oe"].val);
 						isRc	=	false;
 						isExist =	true;
 					}
@@ -126,19 +126,19 @@ int convert_gfa(GFAKluge& gg)
 					}	
 				} else 
 					return FL_FORMAT_ERR;
-				s.sequence += isRc ? rc_dna_seq(n_2_s[p.segment_names[i]].sequence, cor_s, cor_e) : n_2_s[p.segment_names[i]].sequence.substr(cor_s, cor_e - cor_s);  
+				s.sequence +=  (isRc ? rc_dna_seq(n_2_s[p.segment_names[i]].sequence, cor_s, cor_e) : n_2_s[p.segment_names[i]].sequence.substr(cor_s, cor_e - cor_s));  
 				s.length += cor_e - cor_s;
-			}	
+				pre_seq_id = p.segment_names[i];
+			}
 			opt_elem o = {"LN","i",to_string(s.length)};
 			s.opt_fields.push_back(o); 
 			ss.push_back(s);
 			if (ss.size() > LIMITED_SIZE) 
 				output_seqs(ss);
-
-		}	
-	
-	}
-
+		}
+	}	
+	if (ss.size()) 
+		output_seqs(ss);
 	return NORMAL;
 }
 
@@ -155,13 +155,11 @@ int main(int argc, char *argv[])
 
 	GFAKluge gg;
 	gg.parse_gfa_file(gfa_fl_name);
-
-	convert_gfa(gg);
-
-	return 0;	
-
-
-
+	if (convert_gfa(gg)) {
+		fprintf(stderr,"File format Error\n");
+		return FL_FORMAT_ERR;	
+	}
+	return NORMAL;	
 }
 
 

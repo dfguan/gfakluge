@@ -33,17 +33,21 @@ int main(int argc, char *argv[])
     if (!get_params(argc, argv, &o)) 
         exit(0);
     GFAKluge gg;
+	//fprintf(stderr, "%s\n", o.gfa_fn.c_str());
     gg.parse_gfa_file(o.gfa_fn);
-	
-    paf_parser pp;
-    pp.open_file(o.map_fn);
-	
+    gg.id_analyze();
+	paf_parser pp;
+    if (pp.open_file(o.map_fn)) {
+		fprintf(stderr, "IO Error, Please Check your Paf file\n");
+		return IO_ERR;
+	}
 	int bk_count, jn_count;
 	bk_count = jn_count = 0;	
     int unit_size;
     while ((unit_size = pp.read_next_block())) { 
         aln_block * a = pp.get_blk();
-        proc_blk(a, unit_size, gg, o.bk_thres, &bk_count, &jn_count);     
+		//fprintf(stderr,"%d\n", unit_size);
+		proc_blk(a, unit_size, gg, o.bk_thres, &bk_count, &jn_count);     
     }
 
     pp.close_file();
@@ -51,7 +55,7 @@ int main(int argc, char *argv[])
 	fprintf(stderr, "[merge stats]: %d break point, %d joint point\n", bk_count, jn_count);
 	
 	//write new gg out to stdout
-	gg.block_order_string_2(); 
+	cout<<gg.block_order_string_2()<<endl; 
     
 	return NORMAL;
 }
