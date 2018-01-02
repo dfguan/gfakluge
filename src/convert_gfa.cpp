@@ -102,11 +102,8 @@ int convert_gfa(GFAKluge& gg)
 			string cur_seq_id;
 			int cor_s, cor_e;
 			bool isRc, isExist;
-			s.length = n_2_s[pre_seq_id].length;
-			if (s.length != UINT64_MAX) {
-				s.sequence = p.orientations[0] ? n_2_s[pre_seq_id].sequence : rc_dna_seq(n_2_s[pre_seq_id].sequence, 0, n_2_s[pre_seq_id].length) ; 
-			} else 
-				return FL_FORMAT_ERR;	
+			s.length = 0;
+			s.sequence = "";
 			for (size_t i = 1 ; i < p.segment_names.size(); ++i) {
 				isExist = false;
 				for (auto a : n_2_e[pre_seq_id]) {
