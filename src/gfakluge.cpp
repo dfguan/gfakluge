@@ -1367,7 +1367,13 @@ namespace gfak{
         } 
     
     }
-
+	int GFAKluge::add_tag(string id, opt_elem *o) 
+	{
+		//fprintf(stderr, "%s\n",name_to_seq[id].sequence.c_str());
+		name_to_seq[id].opt_fields.push_back(*o);
+			
+		return 0;
+	}
 
 
     //dg30 code end here

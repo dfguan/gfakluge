@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
     int unit_size;
     while ((unit_size = pp.read_next_block())) { 
         aln_block * a = pp.get_blk();
+		//for (int i = 0; i < unit_size; ++i) cerr<< a->alns[i].seq_id<<"\t"<<a->alns[i].ref_s<<"\t"<<a->alns[i].ref_e<<"\t"<<a->alns[i].isConverted<<endl;
 		//fprintf(stderr,"%d\n", unit_size);
 		proc_blk(a, unit_size, gg, o.bk_thres, &bk_count, &jn_count);     
     }
@@ -55,7 +56,7 @@ int main(int argc, char *argv[])
 	fprintf(stderr, "[merge stats]: %d break point, %d joint point\n", bk_count, jn_count);
 	
 	//write new gg out to stdout
-	cout<<gg.block_order_string_2()<<endl; 
+	cout<<gg.block_order_string_2(); 
     
 	return NORMAL;
 }

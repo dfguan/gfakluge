@@ -46,7 +46,8 @@ typedef struct _aln_unit{
     _aln_unit& operator= (const _aln_unit& e){
         seq_id = e.seq_id;
         seq_len = e.seq_len;
-        seq_s = e.seq_s;
+        isConverted = e.isConverted;
+		seq_s = e.seq_s;
         seq_e = e.seq_e;
         ref_s = e.ref_s;
         ref_e = e.ref_e;
@@ -123,7 +124,7 @@ public:
         fl.open(fl_name);
         //read the first line;
         getline(fl, cur_ln);
-        fl.seekg(0, ios::beg);
+        //fl.seekg(0, ios::beg);
         tokens = split(cur_ln, '\t');
         pre_id = tokens[5];
     }    
@@ -134,7 +135,7 @@ public:
        if (fl.is_open()) {
            //read the first line
             getline(fl, cur_ln);
-            fl.seekg(0, ios::beg);
+            //fl.seekg(0, ios::beg);
             tokens = split(cur_ln, '\t');
 			pre_id = tokens[5];
             return NORMAL;
@@ -178,7 +179,9 @@ public:
                     int t = u.seq_s;
                     u.seq_s = u.seq_len - u.seq_e;
                     u.seq_e = u.seq_len - t; 
-                } 
+                } else {
+                    u.isConverted = false;
+				} 
                 aln_blk.push(&u);
                 return CONTINUE;
             } else {
@@ -196,7 +199,8 @@ public:
                 if (process(cur_ln) == BREAK)
                     break;          
             }
-        }
+        } else 
+			aln_blk.clear();
         return aln_blk.aln_unit_index;
     }
     aln_block * get_blk() 

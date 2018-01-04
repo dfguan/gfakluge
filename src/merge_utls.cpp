@@ -19,7 +19,7 @@
 #include "merge_utls.hpp"
 int proc_noneoverlap_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
 {
-        edge_elem edg;
+		edge_elem edg;
         edg.id = g.get_new_id(2);//new id here got to figure out how to do 
         
         group_elem grp;
@@ -29,10 +29,10 @@ int proc_noneoverlap_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
         
 
         edg.source_name = u->seq_id;
-        edg.source_orientation_forward = u->isConverted;
+        edg.source_orientation_forward = !u->isConverted;
         
         edg.sink_name = v->seq_id;
-        edg.sink_orientation_forward = v->isConverted;
+        edg.sink_orientation_forward = !v->isConverted;
         //! if less than bk_threshold here, should it be extended? 1400 8                                         
         edg.source_begin =  u->seq_e;
         edg.source_end =  u->seq_e;
@@ -46,25 +46,25 @@ int proc_noneoverlap_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
        edg.ends.set(0,0);
        edg.ends.set(1,0);
        if (u->isConverted) {
-            int64_t t = edg.source_begin;
-            edg.source_begin = u->seq_len - edg.source_end; //- source_add_one;
-            edg.source_end = u->seq_len - t; // - source_add_one;
+            //int64_t t = edg.source_begin;
+            edg.source_end = edg.source_begin = u->seq_len - u->seq_s; //- source_add_one;
+            //edg.source_end = u->seq_len - t; // - source_add_one;
        } 
 		if (edg.source_end  == (uint64_t) u->seq_len) {edg.ends.set(0,1);edg.ends.set(1,1);} //source_add_one = 0;} 
        //int sink_add_one = 1;
        edg.ends.set(2,0);
        edg.ends.set(3,0);
        if (v->isConverted) {
-            int64_t t = edg.sink_begin;
-            edg.sink_begin = v->seq_len - edg.sink_end;// -sink_add_one;
-            edg.sink_end = v->seq_len - t;// - sink_add_one;
+            //int64_t t = edg.sink_begin;
+            edg.sink_end = edg.sink_begin = v->seq_len - v->seq_e;// -sink_add_one;
+            //edg.sink_end = v->seq_len;// - sink_add_one;
        }  
-		if (edg.sink_end == (uint64_t) v->seq_len) {
+		if (edg.sink_end == (uint64_t) v->seq_len) { // this is impossible
 			edg.ends.set(2,1);
 			edg.ends.set(3,1);
 		}
        
-        int dist =  edg.source_end - edg.source_begin + edg.sink_end - edg.sink_begin;
+        int dist =  v->ref_e - v->ref_s + u->ref_e - u->ref_s;
         edg.alignment = to_string(dist) + "M";
 
          
@@ -77,11 +77,11 @@ int proc_noneoverlap_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
             
         grp.ordered = true;
         grp.items.push_back(u->seq_id);
-        grp.orientations.push_back(u->isConverted);
+        grp.orientations.push_back(!u->isConverted);
         grp.items.push_back(edg.id);
         grp.orientations.push_back(true);
         grp.items.push_back(v->seq_id);
-        grp.orientations.push_back(v->isConverted);
+        grp.orientations.push_back(!v->isConverted);
         
         o.key = "SE";
         o.type = "B";
@@ -103,13 +103,14 @@ int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
     int s_d = v->ref_s - u->ref_s; // distance of start
     int e_d; //distance of ends 
     edg.source_name = u->seq_id;
-    edg.source_orientation_forward = u->isConverted;
+    edg.source_orientation_forward = !u->isConverted;
     edg.sink_name = v->seq_id;
-    edg.sink_orientation_forward = v->isConverted;
+    edg.sink_orientation_forward = !v->isConverted;
     //if not contained 
     if (u->ref_e < v->ref_e)  {
+        //fprintf(stderr, "N:%s\t%d\t%s\t%d\n", u->seq_id.c_str(), e_d, v->seq_id.c_str(), s_d);
         e_d = v->ref_e - u->ref_e;
-        edg.source_begin = u->seq_e - s_d - 1;//check if wrong to minus one here?  
+        edg.source_begin = u->seq_s + s_d;//check if wrong to minus one here?  
         edg.source_end = u->seq_e;
          
         edg.sink_begin = v->seq_s; 
@@ -136,15 +137,15 @@ int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
         }
 		if (edg.sink_end == (uint64_t) v->seq_len) edg.ends.set(3,1);
          
-        edg.alignment = to_string(u->ref_e - v->ref_e + 1) + "M";  
+        edg.alignment = to_string(u->ref_e - v->ref_s + 1) + "M";  
         g.add_edge(edg.source_name, edg);
     } else {
-        e_d = u->ref_e - v->ref_e;
-        edg.source_begin = u->seq_s;//check if wrong  
-        edg.source_end = u->seq_e;
-         
-        edg.sink_begin = v->seq_s + s_d; 
-        edg.sink_end = v->seq_e - e_d;//!
+		e_d = u->ref_e - v->ref_e;
+        edg.source_begin = u->seq_s + s_d;//check if wrong  
+        edg.source_end = u->seq_e - e_d;
+        //fprintf(stderr, "Y:%s\t%d\t%s\t%d\n", u->seq_id.c_str(), e_d, v->seq_id.c_str(), s_d);
+        edg.sink_begin = v->seq_s; 
+        edg.sink_end = v->seq_e;//!
         
         //int source_add_one = 1;
         edg.ends.set(0,0);
@@ -177,7 +178,7 @@ int proc_blk(aln_block *abk, int u_size, GFAKluge &g, int bk_thres, int* bk_coun
 {
     int dist;
     aln_unit *au = abk->alns;
-    map<string, sequence_elem, custom_key> ss = g.get_name_to_seq();
+    //map<string, sequence_elem, custom_key> ss = g.get_name_to_seq();
     for (int i = 0; i < u_size; ++i) {
         //check left side
         if (au[i].seq_s > bk_thres) {
@@ -186,8 +187,9 @@ int proc_blk(aln_block *abk, int u_size, GFAKluge &g, int bk_thres, int* bk_coun
             o.type = "B";
             o.val = "i";
             o.val += to_string(au[i].seq_s) + ":" + to_string(au[i].seq_s -1);
-            sequence_elem& s = ss[au[i].seq_id];//if key exist?
-            s.opt_fields.push_back(o);
+            g.add_tag(au[i].seq_id, &o);
+			//sequence_elem& s = ss[au[i].seq_id];//if key exist?
+			//cout<<s.to_string_1()<<endl;
 			++*bk_count;
         }
         if ((dist = au[i].seq_len - au[i].seq_e + 1) > bk_thres) {
@@ -196,8 +198,9 @@ int proc_blk(aln_block *abk, int u_size, GFAKluge &g, int bk_thres, int* bk_coun
             o.type = "B";
             o.val = "i";
             o.val += to_string(au[i].seq_e - 1) + ":" + to_string(au[i].seq_e);
-            sequence_elem& s = ss[au[i].seq_id];//if key exist
-            s.opt_fields.push_back(o);
+            g.add_tag(au[i].seq_id, &o);
+            //sequence_elem& s = ss[au[i].seq_id];//if key exist
+            //s.opt_fields.push_back(o);
 			++*bk_count;
         }
     } 
@@ -215,10 +218,10 @@ int proc_blk(aln_block *abk, int u_size, GFAKluge &g, int bk_thres, int* bk_coun
                 
                 if (au[u].ref_e < au[v].ref_s) {
                     proc_noneoverlap_edges(au + u, au + v, g);
+					++*jn_count;
                 } else {
                     proc_overlapped_edges(au + u, au + v, g); 
                 }
-				++*jn_count;
             }
         }
     }

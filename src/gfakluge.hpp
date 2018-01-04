@@ -437,6 +437,7 @@ namespace gfak{
             bool	edge_exist(string e1_id, string e2_id); 
             int		id_analyze();
             string	get_new_id(int type);//1 for seq 2 for edge 3 for group 
+			int		add_tag(string seq_id, opt_elem *o);//add optional field for segment element
         private:
             //here consider id composed by a prefix and number and suffix not work for the others
             id_component edge_id_comp, group_id_comp;
