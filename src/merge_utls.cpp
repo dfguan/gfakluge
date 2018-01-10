@@ -17,7 +17,7 @@
  */
 
 #include "merge_utls.hpp"
-int proc_noneoverlap_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
+int proc_noneoverlap_edges(aln_unit *u, aln_unit *v, GFAKluge &g, int bk_thres)
 {
 		edge_elem edg;
         edg.id = g.get_new_id(2);//new id here got to figure out how to do 
@@ -50,8 +50,14 @@ int proc_noneoverlap_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
             edg.source_end = edg.source_begin = u->seq_len - u->seq_s; //- source_add_one;
             //edg.source_end = u->seq_len - t; // - source_add_one;
        } 
-		if (edg.source_end  == (uint64_t) u->seq_len) {edg.ends.set(0,1);edg.ends.set(1,1);} //source_add_one = 0;} 
+		if (edg.source_end + bk_thres >  (uint64_t) u->seq_len ) {
+			edg.source_begin = edg.source_begin = u->seq_len;
+			edg.ends.set(0,1);
+			edg.ends.set(1,1);
+			
+		} //source_add_one = 0;} 
        //int sink_add_one = 1;
+	   if (edg.source_begin < (uint64_t) bk_thres) edg.source_end = edg.source_begin = 0;
        edg.ends.set(2,0);
        edg.ends.set(3,0);
        if (v->isConverted) {
@@ -59,11 +65,13 @@ int proc_noneoverlap_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
             edg.sink_end = edg.sink_begin = v->seq_len - v->seq_e;// -sink_add_one;
             //edg.sink_end = v->seq_len;// - sink_add_one;
        }  
-		if (edg.sink_end == (uint64_t) v->seq_len) { // this is impossible
+		if (edg.sink_end + bk_thres > (uint64_t) v->seq_len) { // this is impossible
+			edg.sink_begin = edg.sink_end = v->seq_len;
 			edg.ends.set(2,1);
 			edg.ends.set(3,1);
 		}
        
+	   if (edg.sink_begin < (uint64_t) bk_thres) edg.sink_end = edg.sink_begin = 0;
         int dist =  v->ref_e - v->ref_s + u->ref_e - u->ref_s;
         edg.alignment = to_string(dist) + "M";
 
@@ -96,7 +104,7 @@ int proc_noneoverlap_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
         return NORMAL;
 }
 
-int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
+int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g, int bk_thres)
 {
     edge_elem edg;
     edg.id = g.get_new_id(2);//new id here got to figure out how to do 
@@ -124,9 +132,11 @@ int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
             edg.source_end = u->seq_len - t; //+ source_add_one;
         }
 
-        if (edg.source_end == (uint64_t) u->seq_len) {
+        if (edg.source_end + bk_thres > (uint64_t) u->seq_len) {
+				edg.source_end = u->seq_len;
                 edg.ends.set(1,1); 
         } 
+		if (edg.source_begin < (uint64_t) bk_thres) edg.source_begin = 0;
         //int sink_add_one = 1;
         edg.ends.set(2,0);
         edg.ends.set(3,0);
@@ -135,8 +145,11 @@ int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
             edg.sink_begin = v->seq_len - edg.sink_end;// + sink_add_one;
             edg.sink_end = v->seq_len - t;// + sink_add_one;
         }
-		if (edg.sink_end == (uint64_t) v->seq_len) edg.ends.set(3,1);
-         
+		if (edg.sink_end + bk_thres > (uint64_t) v->seq_len) {
+			edg.sink_end = v->seq_len;
+			edg.ends.set(3,1);
+		}        
+	   if (edg.sink_begin < (uint64_t) bk_thres) edg.sink_begin = 0;	
         edg.alignment = to_string(u->ref_e - v->ref_s + 1) + "M";  
         g.add_edge(edg.source_name, edg);
     } else {
@@ -156,8 +169,11 @@ int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
             edg.source_begin = u->seq_len - edg.source_end; //+ source_add_one;
             edg.source_end = u->seq_len - t;// + source_add_one;
         }
-        if (edg.source_end == (uint64_t) u->seq_len) edg.ends.set(1,1);
-
+        if (edg.source_end + bk_thres > (uint64_t) u->seq_len) {
+			edg.source_end = u->seq_len;
+			edg.ends.set(1,1);
+		}
+		if (edg.source_begin < (uint64_t) bk_thres) edg.source_begin = 0;
         //int sink_add_one = 1;
         edg.ends.set(2,0);
         edg.ends.set(3,0);
@@ -166,8 +182,12 @@ int proc_overlapped_edges(aln_unit *u, aln_unit *v, GFAKluge &g)
             edg.sink_begin = v->seq_len - edg.sink_end;
             edg.sink_end = v->seq_len - t;
         } 
-		if (edg.sink_end == (uint64_t) v->seq_len) edg.ends.set(3, 1);
+		if (edg.sink_end + bk_thres > (uint64_t) v->seq_len) {
+			edg.sink_end = v->seq_len;
+			edg.ends.set(3, 1);
+		}
         
+		if (edg.sink_begin < (uint64_t) bk_thres) edg.sink_begin = 0;
 		edg.alignment = to_string(v->ref_e - v->ref_s) + "M";//!!!whether should add one here according to coordinate  
         g.add_edge(edg.source_name, edg);
     }
@@ -217,10 +237,10 @@ int proc_blk(aln_block *abk, int u_size, GFAKluge &g, int bk_thres, int* bk_coun
                 }
                 
                 if (au[u].ref_e < au[v].ref_s) {
-                    proc_noneoverlap_edges(au + u, au + v, g);
+                    proc_noneoverlap_edges(au + u, au + v, g, bk_thres);
 					++*jn_count;
                 } else {
-                    proc_overlapped_edges(au + u, au + v, g); 
+                    proc_overlapped_edges(au + u, au + v, g, bk_thres); 
                 }
             }
         }

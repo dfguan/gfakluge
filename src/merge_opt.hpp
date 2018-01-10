@@ -24,7 +24,7 @@ using namespace std;
 
 typedef struct _opt {
     bool         useful;
-    int          bk_thres;   
+    int          bk_thres = 100;   
     string       gfa_fn;
     string       map_fn;
 }opts;
