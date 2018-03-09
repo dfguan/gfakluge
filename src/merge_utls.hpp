@@ -25,7 +25,7 @@ using namespace std;
 using namespace gfak;
 
 
-int proc_blk(aln_block *abk, int u_s, GFAKluge &g, int bk_thres, int *bk_count, int *jn_count);
+int proc_blk(int type, aln_block *abk, int u_s, GFAKluge &g, int bk_thres, int map_len_thres, int *bk_count, int *jn_count);
 
 #endif
 

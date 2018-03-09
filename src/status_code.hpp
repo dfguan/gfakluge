@@ -26,6 +26,7 @@
 #define FL_FORMAT_ERR 3
 //WARNINGs 
 #define EMPTY_FILE 4
-#define OTHER 3
+#define NOT_ENOUGH 5
+#define OTHER 6
 
 #endif

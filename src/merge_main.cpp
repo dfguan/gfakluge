@@ -46,9 +46,9 @@ int main(int argc, char *argv[])
     int unit_size;
     while ((unit_size = pp.read_next_block())) { 
         aln_block * a = pp.get_blk();
-		//for (int i = 0; i < unit_size; ++i) cerr<< a->alns[i].seq_id<<"\t"<<a->alns[i].ref_s<<"\t"<<a->alns[i].ref_e<<"\t"<<a->alns[i].isConverted<<endl;
+		//for (int i = 0; i < unit_size; ++i) cerr<< a->alns[i].seq_id<<"\t"<<a->alns[i].ref_s<<"\t"<<a->alns[i].ref_e<<endl;
 		//fprintf(stderr,"%d\n", unit_size);
-		proc_blk(a, unit_size, gg, o.bk_thres, &bk_count, &jn_count);     
+		proc_blk(1, a, unit_size, gg, o.bk_thres,o.map_len_thres, &bk_count, &jn_count);     
     }
 
     pp.close_file();

@@ -25,6 +25,7 @@
 struct option long_options[] =
 {
     {"break_threshold", 1, NULL, 'b'},
+    {"mapped_len_thres", 1, NULL, 'm'},
     {"help", 0, NULL, 'h'},
     {0,0,0,0}
 };
@@ -34,8 +35,9 @@ int help()
     fprintf(stderr, "gfa_merge [-b] <GFA_FILE> <PAF_FILE>\n");
     fprintf(stderr, "options:\n");
     fprintf(stderr, "       -b     break point threshold[100]\n");
+    fprintf(stderr, "       -m     minimum mapped length[0]\n");
     fprintf(stderr, "       -h     print help information\n");
-    return NORMAL;
+	return NORMAL;
 }
 
 
@@ -44,11 +46,14 @@ bool get_params(int argc ,char *argv[], opts *o)
 {
     int c,option_index = 0;
     optind = 1;
-    while ((c = getopt_long(argc, argv, "hb:", long_options, &option_index)) > 0) {
+    while ((c = getopt_long(argc, argv, "hm:b:", long_options, &option_index)) > 0) {
         switch (c){
             case 'b':
                 o->bk_thres = atoi(optarg);
                 break;
+			case 'm':
+				o->map_len_thres = atoi(optarg);
+				break;
             case 'h':
                help();
                return false;

@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  merge_opt.h
+ *       Filename:  gfaAfa2edges.hpp
  *
- *    Description:  merge options 
+ *    Description:  
  *
  *        Version:  1.0
- *        Created:  22/12/2017 10:52:48
+ *        Created:  08/03/2018 12:22:09
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -15,23 +15,14 @@
  *
  * =====================================================================================
  */
-#ifndef _MERGE_OPT_H
-#define _MERGE_OPT_H
 
+#ifndef _CONVERT_FALCON_GFA_H
+#define _CONVERT_FALCON_GFA_H
 
-#include <string>
+#include "gfakluge.hpp"
+#include "status_code.hpp"
+
 using namespace std;
-
-typedef struct _opt {
-    bool         useful;
-    int          bk_thres = 100;
-	int			 map_len_thres = 0;	
-    string       gfa_fn;
-    string       map_fn;
-}opts;
-
-
-int help();
-bool get_params(int argc ,char *argv[], opts *o);
+using namespace gfak;
 
 #endif

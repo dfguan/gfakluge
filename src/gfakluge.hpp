@@ -105,9 +105,10 @@ namespace gfak{
         long id;
         std::string to_string_2(){
             stringstream st;
-            st << "S" << "\t" << name << "\t" << length << "\t" << sequence;
+            //st << "S" << "\t" << name << "\t" << length << "\t" << sequence;
+            st << "S" << "\t" << name << "\t" << length << "\t" << "*";
             if (opt_fields.size() > 0){
-                for (auto i : opt_fields){
+				for (auto i : opt_fields){
                     st << "\t" << i.to_string();
                 }
             }

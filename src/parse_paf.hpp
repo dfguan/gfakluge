@@ -26,7 +26,7 @@
 #include <stdio.h>
 
 #include "status_code.hpp"
-
+#include "ds.hpp"
 //PS
 #define BREAK 1
 #define CONTINUE 2
@@ -34,25 +34,34 @@
 
 
 using namespace std;
+using ds::ary;
 
 typedef struct _aln_unit{
     string  seq_id;
     int     seq_len;
-    bool    isConverted;
-    int     seq_s;//data type might required to be extended 
+    bool	isForward;
+	bool	isCovered;
+	int     seq_s;//data type might required to be extended 
     int     seq_e;
     int     ref_s;
     int     ref_e;
     _aln_unit& operator= (const _aln_unit& e){
         seq_id = e.seq_id;
         seq_len = e.seq_len;
-        isConverted = e.isConverted;
+		isForward = e.isForward;
+		isCovered = e.isCovered;
 		seq_s = e.seq_s;
         seq_e = e.seq_e;
         ref_s = e.ref_s;
         ref_e = e.ref_e;
         return *this;
     }
+	bool operator<(const _aln_unit& r) const {
+		if (ref_s < r.ref_s) return true;
+		else if (ref_s == r.ref_s) return ref_e > r.ref_e;
+		else return false;
+	}
+	int set_covered() { isCovered = true;return NORMAL;}
 }aln_unit;
 
 typedef struct _aln_block{
@@ -60,15 +69,17 @@ typedef struct _aln_block{
     int         ref_len;
     int         aln_unit_limit;
     aln_unit    *alns;
-    bool        isInt;
+    bool        isInit;
     int         aln_unit_index;
+	bool		isSorted;
+	bool		isSetCovered;
     _aln_block() {
         //allocate space for aln unit
-        isInt = false;
+        isInit = false;
         aln_unit_limit = 10; 
         aln_unit_index = 0;
         alns = new aln_unit[aln_unit_limit];
-        if (alns != NULL) isInt = true; 
+        if (alns != NULL) isInit = true; 
     }
     //double size of aln_unit
     aln_unit* reallocate() {
@@ -103,7 +114,73 @@ typedef struct _aln_block{
         aln_unit_index = 0;
         return NORMAL;
     }
-    ~_aln_block() {
+    // sort reads coordinates
+	int sort_1() {
+		if (aln_unit_index > 1) 
+			sort(alns, alns + aln_unit_index - 1);
+		isSorted = true;
+		return NORMAL;
+	}
+	//set isCovered in aln_unit if ref_e > next.ref_e  
+	int set_is_covered() {
+		if (aln_unit_index > 1) {
+			int pre_ref_e = alns[0].ref_e;	
+			for (int i = 1;  i < aln_unit_index; ++i) {
+				if (pre_ref_e >= alns[i].ref_e) 
+					alns[i].set_covered();
+				else
+					pre_ref_e = alns[i].ref_e;
+			}
+		}  
+		isSetCovered = true;
+		return NORMAL;
+	}
+	//merge alignments requires to be sorted and set covered first
+	int merge_alns(int thres, int thres_mapped_len) 
+	{
+		if (!isSorted) sort_1();
+		if (!isSetCovered) set_is_covered();
+		ary<int> c,g;
+		int c_k,g_k;
+		c_k = g_k = 0;
+		for (int i = 0; i < aln_unit_index; ++i) if (!alns[i].isCovered) c[c_k++] = i; 
+		
+		g[g_k++] = 0;
+		for (int i = 0; i < c_k - 1; ++i) {
+			int p = c[i];
+			int q = c[i+1];	
+			if (!(alns[p].seq_id == alns[q].seq_id && alns[p].isForward == alns[q].isForward && (alns[p].isForward ? alns[q].seq_e > alns[p].seq_e : alns[p].seq_s > alns[q].seq_s) && (alns[q].ref_s - alns[p].ref_e) < thres && (alns[p].isForward ? (alns[q].seq_s - alns[p].seq_e) : (alns[p].seq_s - alns[q].seq_e)) < thres)) g[g_k++] = i + 1;
+			//else {
+				//cerr<<p<<"\t"<<q<<endl;
+				//cerr<< alns[p].seq_id<<"\t"<<alns[p].ref_s<<"\t"<<alns[p].ref_e<<"\t"<<alns[p].seq_s<<"\t"<<alns[p].seq_e<<"\t"<<alns[p].isCovered<<"\t"<<alns[p].seq_e - alns[p].seq_s<<endl;
+				//cerr<< alns[q].seq_id<<"\t"<<alns[q].ref_s<<"\t"<<alns[q].ref_e<<"\t"<<alns[q].seq_s<<"\t"<<alns[q].seq_e<<"\t"<<alns[q].isCovered<<"\t"<<alns[q].seq_e - alns[q].seq_s<<endl;
+			//}
+		}
+		g[g_k] = c_k;	
+		
+		aln_unit t;
+		int z = 0;
+		for (int i = 0; i < g_k; ++i) {
+			//fprintf(stderr, "%d\t%d\n", g[i], g[i+1]-1);
+			int s = c[g[i]];
+			int e = c[g[i+1] - 1];
+			t.seq_s = alns[s].isForward ? alns[s].seq_s : alns[e].seq_s;
+			t.seq_e = alns[s].isForward ? alns[e].seq_e : alns[s].seq_e;
+			if (t.seq_e - t.seq_s < thres_mapped_len) 
+				continue;
+			t.ref_e = alns[e].ref_e;
+			t.ref_s = alns[s].ref_s;
+			t.seq_id = alns[s].seq_id;
+			t.seq_len = alns[s].seq_len;	
+			t.isCovered = false;
+			t.isForward = alns[s].isForward;
+			alns[z++] = t;
+		}	
+		//aln_unit_index = g_k;
+		return z;	
+	}	
+	//release aln_block
+	~_aln_block() {
         if (alns) delete []alns;
     }
 
@@ -126,7 +203,7 @@ public:
         getline(fl, cur_ln);
         //fl.seekg(0, ios::beg);
         tokens = split(cur_ln, '\t');
-        pre_id = tokens[5];
+        pre_id = tokens[0];
     }    
     int open_file(string fl_name) 
     {
@@ -137,7 +214,8 @@ public:
             getline(fl, cur_ln);
             //fl.seekg(0, ios::beg);
             tokens = split(cur_ln, '\t');
-			pre_id = tokens[5];
+			//pre_id = tokens[5];
+			pre_id = tokens[0];
             return NORMAL;
        } else 
            return IO_ERR;
@@ -163,29 +241,23 @@ public:
 		//fprintf(stderr, "%s\n",l.c_str());
 		if (l != "") {
             tokens = split(l, '\t');
-            if (tokens[5] == pre_id) {
+            if (tokens[0] == pre_id) {
                 aln_unit u;
-                u.seq_id = tokens[0];
-                u.seq_len = stoi(tokens[1]);
-                u.seq_s = stoi(tokens[2]);
-                u.seq_e = stoi(tokens[3]);
-                aln_blk.ref_id = tokens[5];
-                aln_blk.ref_len = stoi(tokens[6]);
-                u.ref_s = stoi(tokens[7]);
-                u.ref_e = stoi(tokens[8]);
-                //coverted coordinate if reverse complementary
-                if (tokens[4] == "-") {
-                    u.isConverted = true;
-                    int t = u.seq_s;
-                    u.seq_s = u.seq_len - u.seq_e;
-                    u.seq_e = u.seq_len - t; 
-                } else {
-                    u.isConverted = false;
-				} 
+				//ref_id, ref_len, ref_start, ref_end,seq_id, seq_len, seq_s, seq_e 
+                aln_blk.ref_id = tokens[0]; //this is query's id actually
+                aln_blk.ref_len = stoi(tokens[1]); //query_length
+				u.ref_s = stoi(tokens[2]);
+                u.ref_e = stoi(tokens[3]);
+				u.isForward = tokens[4] == "+"? true : false; 
+                u.isCovered = false;
+				u.seq_id = tokens[5];
+                u.seq_len = stoi(tokens[6]);
+                u.seq_s = stoi(tokens[7]);
+                u.seq_e = stoi(tokens[8]);
                 aln_blk.push(&u);
                 return CONTINUE;
             } else {
-                pre_id = tokens[5];
+                pre_id = tokens[0];
                 return BREAK; 
             }
         } else 
