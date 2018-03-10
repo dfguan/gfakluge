@@ -453,7 +453,7 @@ namespace gfak{
                 }
 
                 if (tokens.size() >= 7){
-                    for (int i = 7; i < tokens.size(); i++){
+                    for (int i = 6; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
                         vector<string> opt_field = split(tokens[i], ':');
                         opt_elem o;
@@ -1320,6 +1320,11 @@ namespace gfak{
             if (e.sink_name == e1_id)
                 return true;    
         return false;
+    }    
+    
+	int GFAKluge::update_seq(string s_id, string *z) 
+    {	
+		name_to_seq[s_id].sequence = *z;
     }    
     
     int GFAKluge::id_analyze() 

@@ -46,6 +46,7 @@ int updated_gfa_sequences(GFAKluge &g, string f_n)
 {
 	ifstream fp(f_n);
 	if (fp.is_open()) {
+		//cout<<"file is open"<<endl;
 		map<string, sequence_elem, custom_key> n_2_s = g.get_name_to_seq();
 		map<string, sequence_elem, custom_key>::iterator it; 
 		string line;
@@ -64,19 +65,21 @@ int updated_gfa_sequences(GFAKluge &g, string f_n)
 						else 
 							break;	
 					}
-					it->second.sequence = z;
+					g.update_seq(seq_id, &z);
 				} else {
 					while (getline(fp, line)) 
 						if (line[0] == '>')	
 							break;	
 				}	
-			}
+			} 
 		}
+		fp.close();
 		return NORMAL;
 	} else {
 		return IO_ERR;
 	}	
 }
+
 
 int extract_gfa(GFAKluge &g)
 {
@@ -84,10 +87,13 @@ int extract_gfa(GFAKluge &g)
 	map<string, vector<edge_elem>> n_2_e = g.get_seq_to_edges();
 	map<string, sequence_elem, custom_key> n_2_s = g.get_name_to_seq();
 	map<string, path_elem> pp = g.get_name_to_path();
-	int count ; 
+	int count = 0; 
+	//for (auto it : n_2_s) {
+		//cout<<it.second.sequence<<endl;
+	//}
 	for (auto it : pp) {
-		sequence_elem s;
-		s.name = it.first;
+		//sequence_elem s;
+		//s.name = it.first;
 		path_elem &p = it.second;
 		int		ol ;
 		//init first path element
@@ -97,21 +103,31 @@ int extract_gfa(GFAKluge &g)
 		//s.sequence = "";
 		int cor_e, cor_s;	
 		bool isRc;
+		//cout<<p.segment_names.size()<<endl;
 		for (size_t i = 1 ; i < p.segment_names.size(); ++i) {
 			for (auto a : n_2_e[pre_seq_id]) {
 				if (a.sink_name == p.segment_names[i]) {
 					int len = n_2_s[pre_seq_id].length;
+					//cout<<a.to_string_2()<<endl;
 					ol = stoi(a.tags["ol"].val);
+					//cout<<ol<<endl;
+					//ol = 1;
 					isRc = p.orientations[i-1];
 					cor_s = isRc ? ol: 0;
 					cor_e = isRc ? len : len - ol; 
 				}
 			}
-			cout<<">E"<<setw(7)<<count<<endl;
+			cout<<">E"<<setfill('0')<<setw(7)<<count<<endl;
 			cout<<(isRc ? rc_dna_seq(n_2_s[pre_seq_id].sequence, cor_s, cor_e) : n_2_s[pre_seq_id].sequence.substr(cor_s, cor_e - cor_s))<<endl;  
 			++count;
 			pre_seq_id = p.segment_names[i];
 		}
+		//output the final 
+		cor_s = 0;
+		cor_e = n_2_s[pre_seq_id].length;
+		cout<<">E"<<setfill('0')<<setw(7)<<count<<endl;
+		cout<<(p.orientations[p.segment_names.size()-1] ? rc_dna_seq(n_2_s[pre_seq_id].sequence, cor_s, cor_e) : n_2_s[pre_seq_id].sequence.substr(cor_s, cor_e - cor_s))<<endl;  
+		++count;
 	}	
 	return NORMAL;
 }
@@ -119,7 +135,6 @@ int extract_gfa(GFAKluge &g)
 
 int main(int argc, char *argv[])
 {
-
 
 	if (argc < 3) {
 		cerr << "convert_falcon_gfa <GFA_FILE> <Preads.fasta>" << endl;
