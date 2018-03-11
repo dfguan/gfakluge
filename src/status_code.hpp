@@ -24,9 +24,10 @@
 #define RES_ERR 1 //resource error memory or cpu
 #define IO_ERR 2 //file not found or some other ERR
 #define FL_FORMAT_ERR 3
+#define LACK_KEY_INFO 4 
 //WARNINGs 
-#define EMPTY_FILE 4
-#define NOT_ENOUGH 5
-#define OTHER 6
+#define EMPTY_FILE 98
+#define NOT_ENOUGH 99
+#define OTHER 100
 
 #endif

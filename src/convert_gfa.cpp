@@ -18,22 +18,13 @@
 #include "gfakluge.hpp"
 #include "status_code.hpp"
 #include <string.h>
+#include <getopt.h>
 
 using namespace std;
 using namespace gfak;
 
 
 #define LIMITED_SIZE 100
-/*char rc_tab[] = {
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 'A', 0, 'C', 0, 0, 0, 'G', 0, 0, 0, 0, 0, 0, 'N', 0, 
-	0, 0, 0, 0, 'T', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 'a', 0, 'c', 0, 0, 0, 'g', 0, 0, 0, 0, 0, 0, 'n', 0, 
-	0, 0, 0, 0, 't', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-}*/
 
 char rc_tab[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -45,7 +36,15 @@ char rc_tab[] = {
 	0, 'T', 0, 'G', 0, 0, 0, 'C', 0, 0, 0, 0, 0, 0, 'N', 0, 
 	0, 0, 0, 0, 'A', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
-
+int help() 
+{
+	fprintf(stderr, "\n");
+	fprintf(stderr, "Usage: convert_gfa [options] <GFA_FILE>\n\n");
+	fprintf(stderr, "options: -r FILE    required if a gfa file doesn't contain sequences\n");
+	fprintf(stderr, "         -s         output non-overlapping string graph\n");
+	fprintf(stderr, "         -h         print help information\n");
+	return NORMAL;
+}
 
 string rc_dna_seq(string &s, int b, int e)
 {
@@ -56,6 +55,15 @@ string rc_dna_seq(string &s, int b, int e)
 	return t;	
 }
 
+int check_seq(GFAKluge &g) 
+{
+	map<string, sequence_elem, custom_key> name_to_seq = g.get_name_to_seq();
+	for (auto it : name_to_seq) {
+		if (it.second.length != it.second.sequence.size())
+			return LACK_KEY_INFO;
+	}
+	return NORMAL;
+}
 int output_seqs(vector<sequence_elem> &ss)
 {
 	for (auto s : ss) cout << s.to_string_2() << endl; 
@@ -98,7 +106,7 @@ int conv_p_2_s_s(GFAKluge& gg)
 			s.sequence = n_2_s[pre_seq_id].sequence;
 			//opt_elem o = {"LN","i",to_string(s.length)};
 			//s.opt_fields.push_back(o);
-			opt_elem o = {"RF","Z",pre_seq_id};
+			opt_elem o = {"sn","Z",pre_seq_id};
 			s.opt_fields.push_back(o);
 			ss.push_back(s); // the first one
 		
@@ -128,7 +136,7 @@ int conv_p_2_s_s(GFAKluge& gg)
 				pre_seq_id = p.segment_names[i];
 				//o = {"LN","i",to_string(s.length)};
 				//t.opt_fields.push_back(o); 
-				o = {"RF","Z",pre_seq_id};
+				o = {"sn","Z",pre_seq_id};
 				t.opt_fields.push_back(o); 
 				ss.push_back(t);
 				if (ss.size() > LIMITED_SIZE) 
@@ -212,7 +220,10 @@ int conv_p_2_s(GFAKluge& gg)
 
 string get_seq_id(string l)
 {
-	return l.substr(1,l.size()-1);//remove the first and last newline character 
+	string t = l.substr(1, l.size()-1);
+	int pos = t.find(' ');
+		
+	return t.substr(0, pos);//remove the first and last newline character 
 }
 int updated_gfa_sequences(GFAKluge &g, string f_n)
 {
@@ -256,28 +267,53 @@ int main(int argc, char *argv[])
 {
 
 	if (argc < 3) {
-		cerr << "conv_gfa [option] <GFA_FILE> <FASTA_FILE>" << endl;
+		help();
 		return 1;
 	}
-	bool isSplitContigs = false;
-	int ind = 1;
-	if (strlen(argv[1]) == 1) {
-		if(argv[1][0] == 's') {
-			isSplitContigs = true;
-			++ind;	
+	int c = 0;
+	optind = 1;
+	string ref_fl = 0; 
+	bool s_c = false;
+	while ((c = getopt(argc, argv, "r:sh")) < 0) {
+		switch(c) {
+			case 'r':
+				ref_fl = optarg;
+				break;
+			case 's':
+				s_c = true;
+				break;
+			case 'h':
+				help();
+				return 1;
+			default:
+				fprintf(stderr, "Undefined Params %c\n", c);
+				help();
+				return 1;
 		}
 	}
-	string	gfa_fl_name = argv[ind++];
+	if (optind + 1 > argc) {
+		fprintf(stderr, "[option_parse]: gfa file can't be ommited\n");
+		help();
+		return 1;
+	}
+	
+	string	gfa_fl_name = argv[optind];
 
-	string	fa_fl_name = argv[ind];
 
 	GFAKluge gg;
 	gg.parse_gfa_file(gfa_fl_name);
-	if (updated_gfa_sequences(gg, fa_fl_name)) {
-		fprintf (stderr,"File open Error\n");
-		return IO_ERR;
-	};
-	if (isSplitContigs) {
+	
+	if (ref_fl != "") {
+		if (updated_gfa_sequences(gg, ref_fl)) {
+			fprintf (stderr,"File open Error\n");
+			return IO_ERR;
+		};
+	}	
+	if (check_seq(gg)) {
+		fprintf(stderr, "sequences error in gfa\n");	
+		return LACK_KEY_INFO; 	
+	}
+	if (s_c) {
 		if (conv_p_2_s_s(gg)) {
 			fprintf(stderr,"File format Error\n");
 			return FL_FORMAT_ERR;	

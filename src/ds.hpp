@@ -57,6 +57,7 @@ namespace ds {
 			size = n;
 			delete []data;
 			data = n_d;
+			return NORMAL;
 		}
 		T& operator[] (int i) {
 			if (data) {
