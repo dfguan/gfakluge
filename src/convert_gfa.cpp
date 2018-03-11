@@ -17,6 +17,7 @@
  */
 #include "gfakluge.hpp"
 #include "status_code.hpp"
+#include <string.h>
 
 using namespace std;
 using namespace gfak;

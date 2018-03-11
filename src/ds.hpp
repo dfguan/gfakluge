@@ -18,6 +18,7 @@
 #ifndef _DATA_STRUCTURE_H
 #define _DATA_STRUCTURE_H
 #include <iostream>
+#include <string.h>
 #include "status_code.hpp"
 using namespace std;
 namespace ds {
