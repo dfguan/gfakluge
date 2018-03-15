@@ -42,7 +42,7 @@ int help()
 	fprintf(stderr, "Usage: convert_gfa [options] <GFA_FILE>\n\n");
 	fprintf(stderr, "options: -r FILE    required if a gfa file doesn't contain sequences\n");
 	fprintf(stderr, "         -s         output non-overlapping string graph\n");
-	fprintf(stderr, "         -g INT     output gfa type, 1 for GFA1, 2 for GFA 2 [1]");
+	fprintf(stderr, "         -g INT     output gfa type, 1 for GFA1, 2 for GFA 2 [1]\n");
 	fprintf(stderr, "         -h         print help information\n");
 	return NORMAL;
 }

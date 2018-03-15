@@ -21,10 +21,12 @@
 //NORMAL STATUS
 #define NORMAL 0
 //ERRORs require to exit
+
 #define RES_ERR 1 //resource error memory or cpu
 #define IO_ERR 2 //file not found or some other ERR
 #define FL_FORMAT_ERR 3
 #define LACK_KEY_INFO 4 
+#define LACK_PARAMS 5
 //WARNINGs 
 #define EMPTY_FILE 98
 #define NOT_ENOUGH 99
