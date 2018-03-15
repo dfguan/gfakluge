@@ -315,10 +315,7 @@ namespace gfak{
     struct id_component {
         std::string prefix;
         uint64_t    cur_max_ind;
-<<<<<<< HEAD
-=======
 		int		fixed_len;//length of cur_max_ind in string maybe filled by zeros	
->>>>>>> develop
         std::string suffix;
     };
     //end 
@@ -436,22 +433,6 @@ namespace gfak{
             // double simple_connectivity() // reports avg edges / sequence
             // double weighted_connectivity() // weight areas of high connectivity higher
             //      behaves kind of like [(N_edges)^2 / (N_seqs)^2 if N_edges > 2]
-<<<<<<< HEAD
-            /****************************************************/
-            /*              dg's code here                      */
-            /****************************************************/
- 
-            bool edge_exist(string e1_id, string e2_id); 
-            int  id_analyze();
-            //end
-            string get_new_id(int type);//1 for seq 2 for edge 3 for group 
-
-        private:
-            //dg30 code here
-            //here consider id composed by a prefix and number and suffix not work for the others
-            id_component edge_id_comp, group_id_comp;
-            //end
-=======
  
             //dg30 start here
             bool	edge_exist(string e1_id, string e2_id); 
@@ -463,7 +444,6 @@ namespace gfak{
             //here consider id composed by a prefix and number and suffix not work for the others
             id_component edge_id_comp, group_id_comp;
             //dg30 end here
->>>>>>> develop
             
             bool use_walks = false;
             // Store whether we've already gone walks->paths and paths->walks

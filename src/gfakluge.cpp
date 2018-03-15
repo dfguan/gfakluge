@@ -1322,43 +1322,22 @@ namespace gfak{
         return false;
     }    
     
-<<<<<<< HEAD
-=======
 	int GFAKluge::update_seq(string s_id, string *z) 
     {	
 		name_to_seq[s_id].sequence = *z;
     }    
     
->>>>>>> develop
     int GFAKluge::id_analyze() 
     {
         //decompose edge id
         int len = current_max_edge_id.length();
         int b1, b2;
-<<<<<<< HEAD
-        id_component& t = edge_id_comp;
-=======
         id_component* t = &edge_id_comp;
->>>>>>> develop
         string z = current_max_edge_id;
         for ( int i = 0; i < 2; ++i) {
             if (len) {
                 for (b1 = 0; b1 < len; ++b1) if (isdigit(z[b1])) break;
                 for (b2 = b1 + 1; b2 < len; ++b2) if (!isdigit(z[b2])) break; 
-<<<<<<< HEAD
-                t.prefix = z.substr(0,b1);
-                t.cur_max_ind = stoi(z.substr(b1,b2 - b1));
-                t.suffix = z.substr(b2);
-                
-            } else {
-                t.prefix = "";
-                t.cur_max_ind = 0; 
-                t.suffix = ""; 
-            } 
-            
-            t = group_id_comp;     
-            z = current_max_group_id;
-=======
                 t->prefix = z.substr(0,b1);
                 t->cur_max_ind = stoi(z.substr(b1,b2 - b1));
 				t->fixed_len = b2 - b1;
@@ -1374,19 +1353,12 @@ namespace gfak{
             t = &group_id_comp;     
             z = current_max_group_id;
 			len = z.length();
->>>>>>> develop
         }
         return 0; 
     }
     string GFAKluge::get_new_id(int type)
     {
         if (type == 2) {
-<<<<<<< HEAD
-            return edge_id_comp.prefix + std::to_string(++edge_id_comp.cur_max_ind) + edge_id_comp.suffix;
-        } else {
-            if (type == 3) {
-                return group_id_comp.prefix+ std::to_string(++group_id_comp.cur_max_ind) + group_id_comp.suffix;
-=======
 			int fixed_len = edge_id_comp.fixed_len;
             char z[fixed_len+1]; snprintf(z, fixed_len+1, "%0*llu", fixed_len, ++edge_id_comp.cur_max_ind);
 			return edge_id_comp.prefix + z + edge_id_comp.suffix;
@@ -1395,16 +1367,11 @@ namespace gfak{
 				int fixed_len = group_id_comp.fixed_len;
 				char z[fixed_len+1]; snprintf(z, fixed_len+1, "%0*llu", fixed_len, ++group_id_comp.cur_max_ind);
                 return group_id_comp.prefix+ z + group_id_comp.suffix;
->>>>>>> develop
             } else 
                 return "";
         } 
     
     }
-<<<<<<< HEAD
-
-
-=======
 	int GFAKluge::add_tag(string id, opt_elem *o) 
 	{
 		//fprintf(stderr, "%s\n",name_to_seq[id].sequence.c_str());
@@ -1412,7 +1379,6 @@ namespace gfak{
 			
 		return 0;
 	}
->>>>>>> develop
 
 
     //dg30 code end here
